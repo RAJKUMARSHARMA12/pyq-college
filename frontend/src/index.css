@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-heading: 'Outfit', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Executive Bento Slate Palette */
+    --bg-app: #0c0d10;
+    --bg-surface: #15171e;
+    --bg-surface-elevated: #1e2029;
+    
+    --brand-accent: #f59e0b;
+    --brand-secondary: #3b82f6;
+    --brand-success: #10b981;
+    
+    --text-primary: #f3f4f6;
+    --text-muted: #9ca3af;
+    
+    --border-card: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(245, 158, 11, 0.35);
+  }
+}
+
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-mono-tag {
+  font-family: var(--font-mono);
+}
+
+@layer utilities {
+  .glass-header {
+    background: rgba(12, 13, 16, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  }
+
+  .glass-card {
+    background: rgba(21, 23, 30, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  }
+
+  .glass-card-interactive {
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .glass-card-interactive:hover {
+    border-color: rgba(245, 158, 11, 0.35);
+    box-shadow: 0 12px 30px -8px rgba(245, 158, 11, 0.15), 0 0 0 1px rgba(245, 158, 11, 0.15);
+    transform: translateY(-3px);
+  }
+
+  .glass-modal {
+    background: rgba(17, 19, 25, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
+  }
+
+  /* Tag Badges */
+  .tag-gold {
+    background: rgba(245, 158, 11, 0.12);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+
+  .tag-blue {
+    background: rgba(59, 130, 246, 0.12);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+
+  .tag-emerald {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  .tag-rose {
+    background: rgba(244, 63, 94, 0.12);
+    color: #fb7185;
+    border: 1px solid rgba(244, 63, 94, 0.3);
+  }
+
+  .tag-slate {
+    background: rgba(255, 255, 255, 0.05);
+    color: #d1d5db;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0c0d10;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f222e;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #374151;
+}
+
+/* Shimmer animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(31, 34, 46, 0.4) 25%, rgba(55, 65, 81, 0.5) 50%, rgba(31, 34, 46, 0.4) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+}
