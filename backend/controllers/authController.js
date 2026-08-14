@@ -2,11 +2,12 @@ import { asyncHandler } from '../middleware/errorMiddleware.js';
 import authenticateUserUseCase from '../usecases/auth/AuthenticateUserUseCase.js';
 
 const sendTokenResponse = (res, statusCode, result) => {
+  const isProduction = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
   const cookieOptions = {
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
     httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: isProduction,
   };
 
   res
@@ -32,11 +33,14 @@ export const loginUser = asyncHandler(async (req, res) => {
 // @desc    User Logout (Clears HTTP Cookie)
 // @route   POST /api/v1/auth/logout
 export const logoutUser = asyncHandler(async (req, res) => {
+  const isProduction = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
   res
     .status(200)
     .cookie('token', 'none', {
       expires: new Date(Date.now() + 10 * 1000),
       httpOnly: true,
+      sameSite: isProduction ? 'none' : 'lax',
+      secure: isProduction,
     })
     .json({ success: true, message: 'Logged out successfully' });
 });

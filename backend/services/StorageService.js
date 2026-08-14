@@ -6,14 +6,22 @@ import fs from 'fs';
  * Abstracts file storage operations for local uploads and free cloud hosting services.
  */
 export class StorageService {
-  constructor(uploadDir = path.join(process.cwd(), 'uploads', 'pyqs')) {
+  constructor(
+    uploadDir = process.env.VERCEL
+      ? path.join('/tmp', 'uploads', 'pyqs')
+      : path.join(process.cwd(), 'uploads', 'pyqs')
+  ) {
     this.uploadDir = uploadDir;
     this.ensureDirectoryExists();
   }
 
   ensureDirectoryExists() {
-    if (!fs.existsSync(this.uploadDir)) {
-      fs.mkdirSync(this.uploadDir, { recursive: true });
+    try {
+      if (!fs.existsSync(this.uploadDir)) {
+        fs.mkdirSync(this.uploadDir, { recursive: true });
+      }
+    } catch (err) {
+      console.warn('⚠️ [Storage Service] Notice:', err.message);
     }
   }
 

@@ -2,6 +2,7 @@
   "name": "pro-res-mern",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Full Stack MERN (MongoDB, Express, React, Node.js) Application",
   "workspaces": [
     "backend",
@@ -14,7 +15,7 @@
     "dev:frontend": "npm --prefix frontend run dev",
     "seed": "npm --prefix backend run seed",
     "seed:admin": "node backend/config/seedAdmin.js",
-    "build": "npm --prefix frontend run build",
+    "build": "npm install --prefix frontend --include=dev && npm --prefix frontend run build",
     "start": "npm --prefix backend start"
   },
   "devDependencies": {

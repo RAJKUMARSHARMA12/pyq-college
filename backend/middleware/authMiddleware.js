@@ -3,10 +3,6 @@ import User from '../models/User.js';
 import ApiError from '../utils/ApiError.js';
 import { isMongoConnected } from '../config/db.js';
 
-// Valid 24-character hexadecimal ObjectId fallbacks for demo tokens
-const MOCK_ADMIN_ID = '65f1a2b3c4d5e6f7a8b9c001';
-const MOCK_STUDENT_ID = '65f1a2b3c4d5e6f7a8b9c002';
-
 /**
  * Auth Middleware Class
  * Extracts JWT tokens from Authorization Headers OR HTTP Cookies.
@@ -33,36 +29,6 @@ export class AuthMiddleware {
     }
 
     try {
-      // Demo Admin Bypass
-      if (token === 'demo-admin-token') {
-        if (isMongoConnected()) {
-          const admin =
-            (await User.findOne({ email: 'admin@prores.edu' })) ||
-            (await User.findOne({ role: 'admin' }));
-          if (admin) {
-            req.user = admin;
-            return next();
-          }
-        }
-        req.user = { _id: MOCK_ADMIN_ID, name: 'System Admin', email: 'admin@prores.edu', role: 'admin' };
-        return next();
-      }
-
-      // Demo Student Bypass
-      if (token === 'demo-student-token') {
-        if (isMongoConnected()) {
-          const student =
-            (await User.findOne({ email: 'student@prores.edu' })) ||
-            (await User.findOne({ role: 'student' }));
-          if (student) {
-            req.user = student;
-            return next();
-          }
-        }
-        req.user = { _id: MOCK_STUDENT_ID, name: 'Alex Student', email: 'student@prores.edu', role: 'student' };
-        return next();
-      }
-
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'pro_res_jwt_secret_key_2026');
 
       if (isMongoConnected()) {
@@ -75,10 +41,12 @@ export class AuthMiddleware {
         }
         req.user = user;
       } else {
+        // When DB is unavailable, use the JWT payload claims directly
+        // This allows already-authenticated users to retain their session
         req.user = {
-          _id: decoded.id && decoded.id.length === 24 ? decoded.id : MOCK_STUDENT_ID,
-          name: decoded.name || 'Demo User',
-          email: decoded.email || 'user@prores.edu',
+          _id: decoded.id,
+          name: decoded.name || 'User',
+          email: decoded.email || '',
           role: decoded.role || 'student',
         };
       }

@@ -90,10 +90,9 @@ export default function App() {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
     };
-    if (currentUser?.role === 'admin') {
-      opts.headers['Authorization'] = 'Bearer demo-admin-token';
-    } else if (currentUser) {
-      opts.headers['Authorization'] = 'Bearer demo-student-token';
+    const token = localStorage.getItem('prores_token');
+    if (token) {
+      opts.headers['Authorization'] = `Bearer ${token}`;
     }
     if (body) opts.body = JSON.stringify(body);
     return opts;
@@ -106,9 +105,14 @@ export default function App() {
       if (res.ok) {
         const data = await res.json();
         if (data.success) setCurrentUser(data.user);
+      } else {
+        // Token invalid or expired — clear stale token
+        localStorage.removeItem('prores_token');
+        setCurrentUser(null);
       }
     } catch {
-      setCurrentUser({ _id: 'student_1', name: 'Alex Student', email: 'student@prores.edu', role: 'student' });
+      // Network error — remain unauthenticated
+      setCurrentUser(null);
     }
   };
 
@@ -210,6 +214,9 @@ export default function App() {
       const json = await res.json();
 
       if (json.success) {
+        if (json.token) {
+          localStorage.setItem('prores_token', json.token);
+        }
         showToast(authMode === 'login' ? 'Logged in successfully!' : 'Account created successfully!', 'success');
         setCurrentUser(json.user);
         setIsAuthModalOpen(false);
@@ -225,10 +232,12 @@ export default function App() {
   const handleLogout = async () => {
     try {
       await fetch('/api/v1/auth/logout', fetchOpts('POST'));
+    } catch {
+      // Ignored
+    } finally {
+      localStorage.removeItem('prores_token');
       setCurrentUser(null);
       showToast('Logged out successfully', 'success');
-    } catch {
-      setCurrentUser(null);
     }
   };
 
@@ -262,12 +271,13 @@ export default function App() {
         formData.append('examType', uploadForm.examType);
         if (uploadForm.solutionUrl) formData.append('solutionUrl', uploadForm.solutionUrl);
 
+        const uploadToken = localStorage.getItem('prores_token');
         res = await fetch('/api/v1/pyqs/upload', {
           method: 'POST',
           body: formData,
           credentials: 'include',
           headers: {
-            ...(currentUser ? { Authorization: currentUser.role === 'admin' ? 'Bearer demo-admin-token' : 'Bearer demo-student-token' } : {})
+            ...(uploadToken ? { Authorization: `Bearer ${uploadToken}` } : {})
           }
         });
       } else {
@@ -373,12 +383,13 @@ export default function App() {
         formData.append('file', solutionForm.file);
         if (solutionForm.explanationText) formData.append('explanationText', solutionForm.explanationText);
 
+        const solToken = localStorage.getItem('prores_token');
         res = await fetch(`/api/v1/pyqs/${readingPaper._id}/solutions`, {
           method: 'POST',
           body: formData,
           credentials: 'include',
           headers: {
-            ...(currentUser ? { Authorization: currentUser.role === 'admin' ? 'Bearer demo-admin-token' : 'Bearer demo-student-token' } : {})
+            ...(solToken ? { Authorization: `Bearer ${solToken}` } : {})
           }
         });
       } else {

@@ -3,9 +3,6 @@ import ApiError from '../../utils/ApiError.js';
 import userRepo from '../../repositories/UserRepository.js';
 import { isMongoConnected } from '../../config/db.js';
 
-const MOCK_ADMIN_ID = '65f1a2b3c4d5e6f7a8b9c001';
-const MOCK_STUDENT_ID = '65f1a2b3c4d5e6f7a8b9c002';
-
 /**
  * AuthenticateUserUseCase
  * Handles User Register, Login, and JWT Token Issuance with strict Role Security.
@@ -29,15 +26,7 @@ export class AuthenticateUserUseCase {
     }
 
     if (!isMongoConnected()) {
-      const isDemoAdmin = email.toLowerCase().includes('admin');
-      const mockUser = {
-        _id: isDemoAdmin ? MOCK_ADMIN_ID : MOCK_STUDENT_ID,
-        name: isDemoAdmin ? 'Demo Admin' : 'Demo Student',
-        email,
-        role: isDemoAdmin ? 'admin' : 'student',
-      };
-      const token = this.generateToken(mockUser);
-      return { success: true, token, user: mockUser };
+      throw ApiError.internal('Database is currently unavailable. Please try again later.');
     }
 
     const user = await this.userRepository.findByEmail(email);
@@ -71,6 +60,10 @@ export class AuthenticateUserUseCase {
       throw ApiError.badRequest('Name, email, and password are required');
     }
 
+    if (!isMongoConnected()) {
+      throw ApiError.internal('Database is currently unavailable. Registration requires an active database connection.');
+    }
+
     // Role Security Guard
     let assignedRole = 'student';
     if (role === 'admin') {
@@ -81,11 +74,9 @@ export class AuthenticateUserUseCase {
       assignedRole = 'admin';
     }
 
-    if (isMongoConnected()) {
-      const existing = await this.userRepository.findByEmail(email);
-      if (existing) {
-        throw ApiError.badRequest(`Email '${email}' is already registered`);
-      }
+    const existing = await this.userRepository.findByEmail(email);
+    if (existing) {
+      throw ApiError.badRequest(`Email '${email}' is already registered`);
     }
 
     const newUser = await this.userRepository.create({
