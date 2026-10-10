@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Activity, AlertTriangle, FileUp, Home, Settings, PieChart, ShieldCheck } from 'lucide-react';
 
 interface SidebarProps {
@@ -7,6 +8,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
+  const navigate = useNavigate();
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <Home size={20} /> },
     { id: 'trades', label: 'Trade Explorer', icon: <Activity size={20} /> },
@@ -29,7 +31,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
           <div
             key={item.id}
             className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(item.id)}
+            onClick={() => {
+              setActiveTab(item.id);
+              if (item.id === 'upload') {
+                navigate('/upload');
+              } else {
+                navigate('/');
+              }
+            }}
           >
             {item.icon}
             <span>{item.label}</span>

@@ -27,14 +27,7 @@ export const TradeDetailsPanel: React.FC<TradeDetailsPanelProps> = ({ trade, onC
           <span style={{ color: 'var(--text-secondary)' }}>Version</span>
           <span>v{trade.versionNumber.toString().padStart(3, '0')}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-          <span style={{ color: 'var(--text-secondary)' }}>Client</span>
-          <span>{trade.client || 'N/A'}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-          <span style={{ color: 'var(--text-secondary)' }}>Amount</span>
-          <span style={{ fontWeight: 600 }}>{trade.amount ? `${trade.amount.toLocaleString()} ${trade.currency}` : 'N/A'}</span>
-        </div>
+
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span style={{ color: 'var(--text-secondary)' }}>Status</span>
           <TradeStatusBadge status={trade.status} />
@@ -44,10 +37,15 @@ export const TradeDetailsPanel: React.FC<TradeDetailsPanelProps> = ({ trade, onC
       <h4 style={{ marginBottom: '1rem', fontSize: '1rem', fontWeight: 600 }}>Lifecycle Events</h4>
       
       <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem' }}>
-        {trade.events.map((event, index) => (
+        {trade.events
+          .filter((_, index, arr) => {
+            const failedIndex = arr.findIndex(e => e.eventStatus.includes('FAILED'));
+            return failedIndex === -1 || index <= failedIndex;
+          })
+          .map((event, index, filteredArr) => (
           <div key={event.eventId} style={{ display: 'flex', marginBottom: '1.5rem', position: 'relative' }}>
             {/* Timeline Line */}
-            {index !== trade.events.length - 1 && (
+            {index !== filteredArr.length - 1 && (
               <div style={{ position: 'absolute', left: '15px', top: '30px', bottom: '-20px', width: '2px', backgroundColor: 'var(--border-color)' }}></div>
             )}
             
@@ -74,13 +72,31 @@ export const TradeDetailsPanel: React.FC<TradeDetailsPanelProps> = ({ trade, onC
                 </span>
               </div>
               
-              {event.metadata && (
-                <div style={{ backgroundColor: 'var(--status-error-bg)', border: '1px solid var(--status-error)', borderRadius: 'var(--radius-sm)', padding: '0.75rem', marginTop: '0.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--status-error)', marginBottom: '0.25rem', fontWeight: 600, fontSize: '0.75rem' }}>
-                    <AlertOctagon size={14} /> {event.metadata.errorCode}
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-primary)' }}>
-                    {event.metadata.errorMessage}
+              {event.metadata && Object.keys(event.metadata).length > 0 && (
+                <div style={{ 
+                  backgroundColor: event.eventStatus.includes('FAILED') ? 'var(--status-error-bg)' : 'var(--status-success-bg)', 
+                  border: `1px solid ${event.eventStatus.includes('FAILED') ? 'var(--status-error)' : 'var(--status-success)'}`, 
+                  borderRadius: 'var(--radius-sm)', padding: '0.75rem', marginTop: '0.5rem' 
+                }}>
+                  {event.eventStatus.includes('FAILED') && (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--status-error)', marginBottom: '0.5rem', fontWeight: 600, fontSize: '0.75rem' }}>
+                        <AlertOctagon size={14} /> {event.metadata.errorCode ? String(event.metadata.errorCode) : 'FAILURE_DETECTED'}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+                        {event.metadata.errorMessage ? String(event.metadata.errorMessage) : 'The system did not provide a specific reason for this failure.'}
+                      </div>
+                    </>
+                  )}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.25rem 1rem', fontSize: '0.75rem' }}>
+                    {Object.entries(event.metadata)
+                      .filter(([key]) => key !== 'errorCode' && key !== 'errorMessage')
+                      .map(([key, value]) => (
+                      <React.Fragment key={key}>
+                        <span style={{ color: event.eventStatus.includes('FAILED') ? 'var(--status-error)' : 'var(--status-success)', opacity: 0.8, textTransform: 'capitalize' }}>{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
+                        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{String(value)}</span>
+                      </React.Fragment>
+                    ))}
                   </div>
                 </div>
               )}

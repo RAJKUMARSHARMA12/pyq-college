@@ -17,9 +17,6 @@ export interface Trade {
   status: TradeStatus;
   createdAt: string;
   updatedAt: string;
-  amount?: number;
-  currency?: string;
-  client?: string;
   expectedSlaBreach?: boolean;
   events: TradeEvent[];
 }

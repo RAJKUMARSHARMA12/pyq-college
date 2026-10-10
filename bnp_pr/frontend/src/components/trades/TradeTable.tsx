@@ -43,8 +43,6 @@ export const TradeTable: React.FC<TradeTableProps> = ({ trades, onRowClick }) =>
             <tr>
               <th>Trade ID</th>
               <th>Version</th>
-              <th>Client</th>
-              <th>Amount</th>
               <th>Status</th>
               <th>Last Update</th>
               <th>Action</th>
@@ -59,14 +57,6 @@ export const TradeTable: React.FC<TradeTableProps> = ({ trades, onRowClick }) =>
                 </td>
                 <td>
                   <div className="cell-primary">v{trade.versionNumber.toString().padStart(3, '0')}</div>
-                </td>
-                <td>
-                  <div className="cell-primary">{trade.client || 'N/A'}</div>
-                </td>
-                <td>
-                  <div className="cell-primary">
-                    {trade.amount ? `${trade.amount.toLocaleString()} ${trade.currency}` : 'N/A'}
-                  </div>
                 </td>
                 <td>
                   <TradeStatusBadge status={trade.status} />
